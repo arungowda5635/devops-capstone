@@ -1,0 +1,38 @@
+
+name: DevOps Capstone CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Website
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Validate required files
+        run: |
+          test -f index.html
+          echo "PASS: index.html exists"
+
+      - name: Validate HTML content
+        run: |
+          grep -q "<html" index.html
+          grep -q "<title>" index.html
+          grep -q "</html>" index.html
+          echo "PASS: Basic HTML validation completed"
+
+      - name: Pipeline completed
+        run: echo "CI pipeline completed successfully!"
