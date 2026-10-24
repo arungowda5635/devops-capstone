@@ -1,5 +1,5 @@
 
-name: DevOps Capstone CI
+name: DevOps Capstone CI/CD
 
 on:
   push:
@@ -22,17 +22,44 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Validate required files
-        run: |
-          test -f index.html
-          echo "PASS: index.html exists"
+      - name: Check required file
+        run: test -f index.html
 
       - name: Validate HTML content
         run: |
           grep -q "<html" index.html
           grep -q "<title>" index.html
           grep -q "</html>" index.html
-          echo "PASS: Basic HTML validation completed"
+          echo "Validation successful"
 
-      - name: Pipeline completed
-        run: echo "CI pipeline completed successfully!"
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload website artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v4
